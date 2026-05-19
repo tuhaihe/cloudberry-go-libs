@@ -328,6 +328,9 @@ func (dbconn *DBConn) GetWithArgs(destination interface{}, query string, args ..
 
 func (dbconn *DBConn) Get(destination interface{}, query string, whichConn ...int) error {
 	connNum := dbconn.ValidateConnNum(whichConn...)
+	if connNum >= len(dbconn.Tx) || connNum >= len(dbconn.ConnPool) {
+		return errors.Errorf("Connection %d is not available (pool size: %d)", connNum, len(dbconn.ConnPool))
+	}
 	if dbconn.Tx[connNum] != nil {
 		return dbconn.Tx[connNum].Get(destination, query)
 	}
